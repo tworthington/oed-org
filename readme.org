@@ -1,0 +1,20 @@
+#+TITLE: OED into ORG
+* Emacs Oxford English Dictionary Lookup
+This package allows the user to send the word at the cursor ("point" in Emacs-speak) to the OED on-line API. If the word (or its root) is found then the dictionary entry is formatted and inserted into a temporary ORG-mode buffer for perusing. This includes a link which will (on Linux) play the pronunciation sample from the OED for that word.
+
+The user will need to obtain a key and id from [[https://developer.oxforddictionaries.com][the OED's developer site]]. The free key and id allow for up to 3000 lookups per month.
+
+The key and id should be put into the "oed-org" customization group.
+
+* Things to do
+ - [ ] Show synonyms and antonyms
+ - [ ] Handle things like superlatives better so that the linkage and grammatical relationship is clearer
+ - [ ] Make the code not stink.
+   - [ ] Fix global cache usage
+
+* Notes
+This is my first major application using Elisp and if you read the code you can actually see the learning curve happen.
+
+It relies on the request package and currently that seems to mean that it has to use a global (called 'cache' at the moment). I'm sure there's a way around this somehow.
+
+The package requires Emacs 25.
