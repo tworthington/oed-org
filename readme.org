@@ -9,8 +9,13 @@ The key and id should be put into the "oed-org" customization group.
 * Things to do
  - [ ] Show synonyms and antonyms
  - [ ] Handle things like superlatives better so that the linkage and grammatical relationship is clearer
+ - [ ] Some sort of history function for when following a thread of word definitions (maybe undo?)
+ - [ ] Try to do something with cross-references
  - [ ] Make the code not stink.
-   - [ ] Fix global cache usage
+   - [ ] Fix global cache usage to at least "oed-cache"
+   - [ ] De-factorise the two request calls into one fn
+   - [ ] Add proper comments to everything
+ - [ ] Remove the "Raw" section from output, or at least make it minimised by default.
 
 * Notes
 This is my first major application using Elisp and if you read the code you can actually see the learning curve happen.
