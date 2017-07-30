@@ -226,7 +226,7 @@
         )
     (add-hook 'temp-buffer-setup-hook 'org-mode)
     (add-hook 'temp-buffer-show-hook 'oed-bufferset)
-    (with-output-to-temp-buffer (concat "*word-meanings*")
+    (with-output-to-temp-buffer "*word-meanings*"
       (oed-cprint "#+TITLE: " theword)
       (oed-lookup-word theword)
       (unless oed-cache
