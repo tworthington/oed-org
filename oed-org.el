@@ -58,7 +58,7 @@
    :timeout 10
    :success (cl-function (lambda (&key data &allow-other-keys)
                            (let-alist data
-                             (setq cache .results)
+                             (setq oed-cache .results)
                              )
                            ))))
 
@@ -78,7 +78,7 @@
                            ))
    :success (cl-function (lambda (&key data &allow-other-keys)
                            (let-alist data
-                             (setq cache .results)
+                             (setq oed-cache .results)
                              )
                            ))))
 
@@ -101,7 +101,7 @@
 (defun oed-lemma (word)
   "Return the root word for the given word"
   (oed-lookup-lemmatron word)
-  (let ((result (oed-jpath cache '(0 lexicalEntries 0))))
+  (let ((result (oed-jpath oed-cache '(0 lexicalEntries 0))))
     (if (assoc 'inflectionOf result)
         (oed-jpath result '(inflectionOf 0 text))
       (oed-jpath result '(derivativeOf 0 text))
@@ -214,7 +214,7 @@
 (defun oed-quickword (&optional rstart rend)
   "Look up the word at point and put the result in the mini-buffer fence"
   (interactive "r")
-  (setq cache nil)
+  (setq oed-cache nil)
   (let (
         (theword
          (downcase
@@ -229,16 +229,16 @@
     (with-output-to-temp-buffer (concat "*word-meanings*")
       (oed-cprint "#+TITLE: " theword)
       (oed-lookup-word theword)
-      (unless cache
+      (unless oed-cache
         (sleep-for 1)
         (setq theword (oed-lemma theword))
         (if theword
             (oed-lookup-word theword))
         )
-      (if cache
+      (if oed-cache
           (progn
             (oed-cprint "#+SUBTITLE: " theword)
-            (let ((bits (oed-jpath cache '(0 lexicalEntries))))
+            (let ((bits (oed-jpath oed-cache '(0 lexicalEntries))))
               (mapc (lambda(x)
                       (let ((entries (oed-jpath x '(entries)))
                             (speech (oed-jpath x '(pronunciations)))
