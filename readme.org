@@ -24,4 +24,5 @@ This is my first major application using Elisp and if you read the code you can 
 
 It relies on the request package and currently that seems to mean that it has to use a global (called 'cache' at the moment). I'm sure there's a way around this somehow.
 
-The package requires Emacs 25 and request.el.
+* Dependencies
+The package requires Emacs 25, json.el and request.el.
