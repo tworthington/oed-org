@@ -14,6 +14,7 @@ The key and id should be put into the "oed-org" customization group.
  - [ ] Try to do something with cross-references
  - [-] Make the code not stink.
    - [X] Fix global cache usage to at least "oed-cache"
+   - [ ] Work out how to mark dependencies in packages
    - [ ] De-factorise the two request calls into one fn
    - [ ] Add proper comments to everything
  - [ ] Remove the "Raw" section from output, or at least make it minimised by default.
@@ -23,4 +24,4 @@ This is my first major application using Elisp and if you read the code you can 
 
 It relies on the request package and currently that seems to mean that it has to use a global (called 'cache' at the moment). I'm sure there's a way around this somehow.
 
-The package requires Emacs 25.
+The package requires Emacs 25 and request.el.
