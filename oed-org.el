@@ -49,7 +49,7 @@
   "A test"
   (interactive "s")
   (request
-   (concat "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/" word)
+   (concat "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/" (url-encode-url word))
    :headers `(("app_id" . ,oed-app-id)
               ("app_key" . ,oed-app-key)
               ("Accept" . "application/json"))
@@ -66,7 +66,7 @@
   "Find the root word of an inflection"
   (interactive "s")
   (request
-   (concat "https://od-api.oxforddictionaries.com:443/api/v1/inflections/en/" word)
+   (concat "https://od-api.oxforddictionaries.com:443/api/v1/inflections/en/" (url-encode-url word))
    :headers `(("app_id" . ,oed-app-id)
               ("app_key" . ,oed-app-key)
               ("Accept" . "application/json"))
@@ -173,9 +173,11 @@
   (mapc (lambda(p)
           (let-alist p
             (oed-cprint "   - Dialects: " (string-join .dialects ", "))
-            (if .audioFile
-                (oed-cprint "     - [[" .audioFile "][" (unescape-string .phoneticSpelling) "]]")
-              (oed-cprint "     - " (unescape-string .phoneticSpelling) " "))
+            ;; No phonetics in compound entries
+            (if .phoneticSpelling
+                (if .audioFile
+                    (oed-cprint "     - [[" .audioFile "][" (unescape-string .phoneticSpelling) "]]")
+                  (oed-cprint "     - " (unescape-string .phoneticSpelling) " ")))
             )
           ) list)
   )
@@ -209,11 +211,16 @@
     (indent-region (point-min) (point-max))
   )
 
-(defun oed-quickword ()
+(defun oed-quickword (&optional rstart rend)
   "Look up the word at point and put the result in the mini-buffer fence"
-  (interactive)
+  (interactive "r")
   (setq cache nil)
-  (let ((theword (downcase (word-at-point)))
+  (let (
+        (theword
+         (downcase
+          (if (use-region-p)
+              (buffer-substring rstart rend)
+            (word-at-point))))
         (temp-buffer-setup-hook)
         (temp-buffer-show-hook)
         )
@@ -222,7 +229,6 @@
     (with-output-to-temp-buffer (concat "*word-meanings*")
       (oed-cprint "#+TITLE: " theword)
       (oed-lookup-word theword)
-      (setq firstlookup cache)
       (unless cache
         (sleep-for 1)
         (setq theword (oed-lemma theword))
@@ -258,13 +264,12 @@
 (defun mplayer-mp3-link()
   "See if we're on an org-link to an mp3 and, if so, play it using mplayer"
   (save-excursion
-    (when (and (looking-back (concat "\\[\\[\\(?:\\(http:[^][\n\r]+\\.mp3\\)?\\]\\[\\)?[^]]*\\(\\]\\)?"))
+    (when (and (looking-back (concat "\\[\\[\\(?:\\(http:[^][\n\r]+\\.mp3\\)?\\]\\[\\)?[^]]*\\(\\]\\)?") 0)
            (goto-char (match-beginning 0))
            (looking-at (concat "\\[\\[\\(http:[^][\n\r]+\\.mp3\\)\\]")))
       (if (match-string-no-properties 1)
           (progn
-            (start-process "" nil "mplayer" (match-string-no-properties 1))
-            t)
+            (start-process "" nil "mplayer" (match-string-no-properties 1)) t)
         (nil)
       )))
   )
