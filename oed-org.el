@@ -156,15 +156,20 @@
       (oed-cprint "")
       )))
 
-(defun oed-expand-pronunciations(list)
+(defun true(val)
+  "Is VAL a non falsey value?"
+  (bound-and-true-p val))
+
+(defun oed-expand-pronunciations(list word)
   (mapc (lambda(p)
           (let-alist p
             (oed-cprint "   - Dialects: " (string-join .dialects ", "))
-            ;; No phonetics in compound entries
-            (if .phoneticSpelling
-                (if .audioFile
-                    (oed-cprint "     - [[" .audioFile "][" (unescape-string .phoneticSpelling) "]]")
-                  (oed-cprint "     - " (unescape-string .phoneticSpelling) " ")))
+            (cond ((and .phoneticSpelling .audioFile)
+                   (oed-cprint "     - [[" .audioFile "][" (unescape-string .phoneticSpelling) "]]"))
+                  ((true .audioFile)
+                   (oed-cprint "     - [[" .audioFile "][" (unescape-string word) "]]"))
+                  ((true .phoneticSpelling)
+                   (oed-cprint "     - " (unescape-string .phoneticSpelling) " ")))
             )
           ) list)
   )
@@ -177,13 +182,13 @@
     (string-join result ", ")))
 
 (defun oed-expand-entry (raw)
-  "Print the basics information about an individual word usage"
-  (let-alist (oed-listselect raw
+  "Print the basics information about an individual word usage, parsing out the RAW data."
+  (let-alist raw
     (if .grammaticalFeatures
         (oed-cprint "  - " (unescape-string (oed-listcollect .grammaticalFeatures 'text))))
     (when .pronunciations
       (oed-cprint "  - Pronunciation: ")
-      (oed-expand-pronunciations .pronunciations))
+      (oed-expand-pronunciations .pronunciations "xxx"))
     (if .etymologies
         (oed-cprint "  - Etymology: " (decode-coding-string (oed-vhead .etymologies ) 'utf-8)))
 
@@ -234,7 +239,7 @@
                                 (oed-cprint "* " (oed-jpath x '(lexicalCategory)))
                                 (when speech
                                   (oed-cprint "  - Pronunciation: ")
-                                  (oed-expand-pronunciations speech))
+                                  (oed-expand-pronunciations speech theword))
                                 (oed-expand-entry e)
                                 ) entries)
                         )
