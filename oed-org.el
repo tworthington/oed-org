@@ -157,19 +157,15 @@
       (oed-cprint "")
       )))
 
-(defun true(val)
-  "Is VAL a non falsey value?"
-  (bound-and-true-p val))
-
 (defun oed-expand-pronunciations(list word)
   (mapc (lambda(p)
           (let-alist p
             (oed-cprint "   - Dialects: " (string-join .dialects ", "))
             (cond ((and .phoneticSpelling .audioFile)
                    (oed-cprint "     - [[" .audioFile "][" (unescape-string .phoneticSpelling) "]]"))
-                  ((true .audioFile)
+                  ((or .audioFile)
                    (oed-cprint "     - [[" .audioFile "][" (unescape-string word) "]]"))
-                  ((true .phoneticSpelling)
+                  ((or .phoneticSpelling)
                    (oed-cprint "     - " (unescape-string .phoneticSpelling) " ")))
             )
           ) list)
@@ -201,7 +197,7 @@
 
 (defun oed-bufferset()
   "Things to do to the buffer after it's filled with the OED data."
-    (indent-region (point-min) (point-max))
+  (indent-region (point-min) (point-max))
   )
 
 (defun oed-quickword ()
