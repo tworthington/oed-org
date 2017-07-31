@@ -120,13 +120,6 @@
           (oed-cprint   (concat label (oed-wrap (decode-coding-string (cdr x) 'utf-8) pre post)))) things )
   )
 
-(defun oed-listselect (list filter)
-  "Pass back a version of the list with only the key->value pairs in filter, in the order of the filter"
-  (mapcar (lambda (item)
-            (assoc item list)
-            ) filter)
-  )
-
 (defun oed-vhead (vector)
   "Return the first item in an array"
   (if (< 0 (length vector))
@@ -140,16 +133,16 @@
 (defun oed-expand-examples(raw depth)
   (let ((examples raw)
         (extext))
-    (mapc (lambda(e)(let-alist (oed-listselect e '(registers text))
+    (mapc (lambda(e)(let-alist e
                        (setq extext (concat "/" .text "/"))
                        (if .registers
                            (setq extext (concat "[" (string-join (append .registers nil) ",") "] " extext)))
                        (oed-cprint (make-string depth ? ) "- " (unescape-string extext)))) examples)))
 
 (defun oed-expand-sense (raw &optional depth)
-  "Print the definition of a sense, the examples associated with it, and recursively expand any sub-senses"
+  "Print the definition of a sense sub-tree (RAW), the examples associated with it, and recursively expand any sub-senses. Add indentation and stars appropriate to an org entry of DEPTH."
   (or depth (setq depth 2))
-  (let-alist (oed-listselect raw '(definitions examples subsenses registers domains crossReferenceMarkers regions))
+  (let-alist raw
     (setq .definitions (or .definitions .crossReferenceMarkers))
     (when .definitions
       (oed-cprint
@@ -191,7 +184,7 @@
 
 (defun oed-expand-entry (raw)
   "Print the basics information about an individual word usage"
-  (let-alist (oed-listselect raw '(etymologies senses pronunciations notes grammaticalFeatures))
+  (let-alist (oed-listselect raw
     (if .grammaticalFeatures
         (oed-cprint "  - " (unescape-string (oed-listcollect .grammaticalFeatures 'text))))
     (when .pronunciations
