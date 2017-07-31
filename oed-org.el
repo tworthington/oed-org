@@ -25,7 +25,8 @@
 
 ;;; Code:
 
-(provide 'oed-org)
+(require 'request)
+(require 'json)
 
 ;;; Customisation
 (defgroup oed-org nil
