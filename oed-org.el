@@ -198,15 +198,15 @@
     (indent-region (point-min) (point-max))
   )
 
-(defun oed-quickword (&optional rstart rend)
+(defun oed-quickword ()
   "Look up the word at point and put the result in the mini-buffer fence"
-  (interactive "r")
+  (interactive)
   (setq oed-cache nil)
   (let (
         (theword
          (downcase
           (if (use-region-p)
-              (buffer-substring rstart rend)
+              (buffer-substring (region-beginning) (region-end))
             (word-at-point))))
         (temp-buffer-setup-hook)
         (temp-buffer-show-hook)
