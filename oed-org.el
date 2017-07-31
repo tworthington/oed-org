@@ -45,11 +45,11 @@
 (defun unescape-string(s)
   (decode-coding-string s 'utf-8))
 
-(defun oed-lookup-word (word)
-  "A test"
+
+(defun oed-lookup (url)
+  "Fetch data from the given URL and set oed-cache to the .results part thereof."
   (interactive "s")
-  (request
-   (concat "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/" (url-encode-url word))
+  (request url
    :headers `(("app_id" . ,oed-app-id)
               ("app_key" . ,oed-app-key)
               ("Accept" . "application/json"))
@@ -61,29 +61,22 @@
                              (setq oed-cache .results)
                              )
                            ))))
+
+(defun oed-lookup-word (word)
+  "Lookup WORD in the entries section."
+  (interactive "s")
+  (oed-lookup
+   (concat "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/" (url-encode-url word)))
+)
 
 (defun oed-lookup-lemmatron (word)
-  "Find the root word of an inflection"
+  "Find the root WORD of an inflection."
   (interactive "s")
-  (request
-   (concat "https://od-api.oxforddictionaries.com:443/api/v1/inflections/en/" (url-encode-url word))
-   :headers `(("app_id" . ,oed-app-id)
-              ("app_key" . ,oed-app-key)
-              ("Accept" . "application/json"))
-   :parser 'json-read
-   :sync t
-   :timeout 10
-   :error (cl-function (lambda (&key data &allow-other-keys)
-                         (message (pp-to-string data))
-                           ))
-   :success (cl-function (lambda (&key data &allow-other-keys)
-                           (let-alist data
-                             (setq oed-cache .results)
-                             )
-                           ))))
+  (oed-lookup
+   (concat "https://od-api.oxforddictionaries.com:443/api/v1/inflections/en/" (url-encode-url word))))
 
 (defun oed-jpath (data path)
-  "Access element of data using a path of the form (index index....) where an index is either an array index or a string"
+  "Access element of DATA using a PATH of the form (index index....) where an index is either an array index or a string."
   (let ((dp (copy-tree data))
         (idx 0))
     (when dp
@@ -131,6 +124,7 @@
   (concat pre thing post))
 
 (defun oed-expand-examples(raw depth)
+  "Present any examples (RAW) as italicised text indented to DEPTH."
   (let ((examples raw)
         (extext))
     (mapc (lambda(e)(let-alist e

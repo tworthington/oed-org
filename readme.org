@@ -15,7 +15,7 @@ The key and id should be put into the "oed-org" customization group.
  - [-] Make the code not stink.
    - [X] Fix global cache usage to at least "oed-cache"
    - [ ] Work out how to mark dependencies in packages
-   - [ ] De-factorise the two request calls into one fn
+   - [X] De-factorise the two request calls into one fn
    - [ ] Add proper comments to everything
  - [ ] Remove the "Raw" section from output, or at least make it minimised by default.
 
