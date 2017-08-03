@@ -43,6 +43,9 @@
   :type 'string
   :group 'oed-org)
 
+(defvar oed-cache nil
+  "A place for the request calls to store their result for later processing by various functions.")
+
 (defun unescape-string(s)
   (decode-coding-string s 'utf-8))
 
@@ -120,6 +123,10 @@
       (aref vector 0)
     nil))
 
+(defun oed-word ()
+  "Return the keyword currently held in the cache."
+  (unescape-string (alist-get 'word (oed-vhead oed-cache))))
+
 (defun oed-wrap(thing pre &optional post)
   (or post (setq post pre))
   (concat pre thing post))
@@ -157,14 +164,14 @@
       (oed-cprint "")
       )))
 
-(defun oed-expand-pronunciations(list word)
+(defun oed-expand-pronunciations(list)
   (mapc (lambda(p)
           (let-alist p
             (oed-cprint "   - Dialects: " (string-join .dialects ", "))
             (cond ((and .phoneticSpelling .audioFile)
                    (oed-cprint "     - [[" .audioFile "][" (unescape-string .phoneticSpelling) "]]"))
                   ((or .audioFile)
-                   (oed-cprint "     - [[" .audioFile "][" (unescape-string word) "]]"))
+                   (oed-cprint "     - [[" .audioFile "][" (oed-word) "]]"))
                   ((or .phoneticSpelling)
                    (oed-cprint "     - " (unescape-string .phoneticSpelling) " ")))
             )
