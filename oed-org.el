@@ -156,14 +156,14 @@
       (when .notes
         (mapc (lambda (n) (oed-cprint "\n" (unescape-string(alist-get 'text n)))) .notes))
       (when .examples
-             (oed-expand-examples .examples depth)
-             (oed-cprint "")
-             ))
-      (when .subsenses
-             (mapc (lambda(s)(oed-expand-sense s (1+ depth))) .subsenses)
-             ))
+        (oed-cprint "")
+        (oed-expand-examples .examples depth)
+        ))
+    (when .subsenses
       (oed-cprint "")
-      )))
+      (mapc (lambda(s)(oed-expand-sense s (1+ depth))) .subsenses)
+      ))
+  )
 
 (defun oed-expand-pronunciations(list)
   (mapc (lambda(p)
@@ -240,6 +240,7 @@
                             (speech (oed-jpath x '(pronunciations)))
                             )
                         (mapc (lambda(e)
+                                (oed-cprint "")
                                 (oed-cprint "* " (oed-jpath x '(lexicalCategory)))
                                 (when speech
                                   (oed-cprint "  - Pronunciation: ")
@@ -250,7 +251,7 @@
                       ) bits)
               ;;              (org-mode)
 
-              (oed-cprint "* Raw")
+              (oed-cprint "\n* Raw")
               (oed-cprint (oed-wrap (pp-to-string bits) "#+BEGIN_SRC javascript\n" "#+END_SRC"))
               )
             )
