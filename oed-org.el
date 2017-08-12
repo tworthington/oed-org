@@ -106,7 +106,7 @@
 (defun oed-cprint (&rest things)
   "Concatenate and print things"
   (mapc 'princ things)
-  (terpri))
+  (terpri nil t))
 
 (defun oed-printcdrs(things &optional label pre post)
   "Print the cdrs of things (which is assumed to be an associative list) one per line labeled with label"
@@ -147,6 +147,7 @@
     (setq .definitions (or .definitions .crossReferenceMarkers))
     (when .definitions
       (oed-cprint
+       "\n"
        (make-string depth ?*)
        " "
        (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
@@ -154,7 +155,7 @@
        (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
        )
       (when .notes
-        (mapc (lambda (n) (oed-cprint "\n" (unescape-string(alist-get 'text n)))) .notes))
+        (mapc (lambda (n) (oed-cprint (unescape-string(alist-get 'text n)))) .notes))
       (when .examples
         (oed-cprint "")
         (oed-expand-examples .examples depth)
@@ -236,17 +237,15 @@
             (oed-cprint "#+SUBTITLE: " theword)
             (let ((bits (oed-jpath oed-cache '(0 lexicalEntries))))
               (mapc (lambda(x)
-                      (let ((entries (oed-jpath x '(entries)))
-                            (speech (oed-jpath x '(pronunciations)))
-                            )
+                      (let-alist x
                         (mapc (lambda(e)
-                                (oed-cprint "")
+                                (oed-cprint "\n")
                                 (oed-cprint "* " (oed-jpath x '(lexicalCategory)))
-                                (when speech
+                                (when .pronunciations
                                   (oed-cprint "  - Pronunciation: ")
-                                  (oed-expand-pronunciations speech))
+                                  (oed-expand-pronunciations .pronunciations))
                                 (oed-expand-entry e)
-                                ) entries)
+                                ) .entries)
                         )
                       ) bits)
               ;;              (org-mode)
@@ -275,3 +274,7 @@
 
 (provide 'oed-org)
 ;;; oed-org.el ends here
+
+                      (let ((entries (oed-jpath x '(entries)))
+                            (speech (oed-jpath x '(pronunciations)))
+                            )
