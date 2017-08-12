@@ -49,7 +49,6 @@
 (defun unescape-string(s)
   (decode-coding-string s 'utf-8))
 
-
 (defun oed-lookup (url)
   "Fetch data from the given URL and set oed-cache to the .results part thereof."
   (interactive "s")
@@ -154,11 +153,13 @@
        (unescape-string (oed-vhead .definitions))
        (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
        )
-      (cond ((< 0 (length .examples))
+      (when .notes
+        (mapc (lambda (n) (oed-cprint "\n" (unescape-string(alist-get 'text n)))) .notes))
+      (when .examples
              (oed-expand-examples .examples depth)
              (oed-cprint "")
              ))
-      (cond ((< 0 (length .subsenses))
+      (when .subsenses
              (mapc (lambda(s)(oed-expand-sense s (1+ depth))) .subsenses)
              ))
       (oed-cprint "")
@@ -195,11 +196,10 @@
       (oed-expand-pronunciations .pronunciations))
     (if .etymologies
         (oed-cprint "  - Etymology: " (decode-coding-string (oed-vhead .etymologies ) 'utf-8)))
-
+    (when .notes
+      (mapc (lambda (n) (oed-cprint "\n" (unescape-string(alist-get 'text n)))) .notes))
     (oed-cprint "")
     (mapc 'oed-expand-sense .senses)
-    (if .notes
-        (oed-cprint (unescape-string (cdr (car (aref .notes 0)))) "\n"))
   ))
 
 (defun oed-bufferset()
