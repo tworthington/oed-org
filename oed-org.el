@@ -192,7 +192,7 @@
         (oed-cprint "  - " (unescape-string (oed-listcollect .grammaticalFeatures 'text))))
     (when .pronunciations
       (oed-cprint "  - Pronunciation: ")
-      (oed-expand-pronunciations .pronunciations "xxx"))
+      (oed-expand-pronunciations .pronunciations))
     (if .etymologies
         (oed-cprint "  - Etymology: " (decode-coding-string (oed-vhead .etymologies ) 'utf-8)))
 
@@ -243,7 +243,7 @@
                                 (oed-cprint "* " (oed-jpath x '(lexicalCategory)))
                                 (when speech
                                   (oed-cprint "  - Pronunciation: ")
-                                  (oed-expand-pronunciations speech theword))
+                                  (oed-expand-pronunciations speech))
                                 (oed-expand-entry e)
                                 ) entries)
                         )
