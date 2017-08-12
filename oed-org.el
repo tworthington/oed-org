@@ -152,7 +152,7 @@
        " "
        (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
        (unescape-string (oed-vhead .definitions))
-       (if .registers (concat " (" (string-join (append .registers nil) ", " ) ")") "" )
+       (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
        )
       (cond ((< 0 (length .examples))
              (oed-expand-examples .examples depth)
