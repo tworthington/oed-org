@@ -184,80 +184,80 @@
   "Print the definition of a sense sub-tree (RAW), the examples associated with it, and recursively expand any sub-senses. Add indentation and stars appropriate to an org entry of DEPTH."
   (or depth (setq depth 2))
   (let-alist raw
-    (if .examples
-        (progn
-          (oed-clprint "\n"
-                (make-string depth ?*)
-                (unescape-string (concat " /"
-                                         (oed-listcollect .examples 'text "/ /")
-                                         "/"
-                                         ))
-                " "))
-      (oed-clprint (make-string depth ? ) "- *Related* "))
-    (oed-clprint
-     (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
-     (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
-     )
-    (oed-cprint
-     "\n"
-     (make-string (+ 2 depth) ? )
-     "- "
-     (unescape-string (oed-listcollect .synonyms 'text))
-     )
-
-    (when (and .subsenses)
+    (when .synonyms
+      (if .examples
+          (progn
+            (oed-clprint "\n"
+                         (make-string depth ?*)
+                         (unescape-string (concat " /"
+                                                  (oed-listcollect .examples 'text "/ /")
+                                                  "/"
+                                                  ))
+                         " "))
+        (oed-clprint (make-string depth ? ) "- *Related* "))
+      (oed-clprint
+       (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
+       (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
+       )
+      (oed-cprint
+       "\n"
+       (make-string (+ 2 depth) ? )
+       "- "
+       (unescape-string (oed-listcollect .synonyms 'text))
+       )
+      (when (and .subsenses (oed-listcollect .subsenses 'synonyms)))
       (oed-cprint "")
       (mapc (lambda(s)(oed-expand-synonym s (+ 3 depth))) .subsenses)
       )
-
     )
   )
+)
 
 (defun oed-expand-antonym (raw &optional depth)
   "Print the definition of a sense sub-tree (RAW), the examples associated with it, and recursively expand any sub-senses. Add indentation and stars appropriate to an org entry of DEPTH."
   (or depth (setq depth 2))
   (let-alist raw
-    (when (or .examples .antonyms)
-    (if .examples
-        (progn
-          (oed-clprint "\n"
-                (make-string depth ?*)
-                (unescape-string (concat " /"
-                                         (oed-listcollect .examples 'text "/ /")
-                                         "/"
-                                         ))
-                " "))
-      (oed-clprint (make-string depth ? ) "- *Related* "))
-    (oed-clprint
-     (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
-     (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
-     )
-    (oed-cprint
-     "\n"
-     (make-string (+ 2 depth) ? )
-     "- "
-     (unescape-string (oed-listcollect .antonyms 'text))
-     )
-    (when (and .subsenses (oed-listcollect .subsenses 'antonyms))
-      (oed-cprint "")
-      (mapc (lambda(s)(oed-expand-antonym s (+ 3 depth))) .subsenses)
+    (when .antonyms
+      (if .examples
+          (progn
+            (oed-clprint "\n"
+                         (make-string depth ?*)
+                         (unescape-string (concat " /"
+                                                  (oed-listcollect .examples 'text "/ /")
+                                                  "/"
+                                                  ))
+                         " "))
+        (oed-clprint (make-string depth ? ) "- *Related* "))
+      (oed-clprint
+       (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
+       (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
+       )
+      (oed-cprint
+       "\n"
+       (make-string (+ 2 depth) ? )
+       "- "
+       (unescape-string (oed-listcollect .antonyms 'text))
+       )
+      (when (and .subsenses (oed-listcollect .subsenses 'antonyms))
+        (oed-cprint "")
+        (mapc (lambda(s)(oed-expand-antonym s (+ 3 depth))) .subsenses)
+        )
       )
     )
   )
-)
 
 (defun oed-find-synonyms (forms)
   "Does FORMS contain any synonyms or subsenses with synonyms?"
   (let ((i 0)
         (flag nil))
     (while (and (not flag) (< i (length forms)))
-      (setq i (1+ i))
       (let-alist (aref forms i)
         (if .synonyms
             (setq flag t)
           (setq flag (and .subsenses (oed-find-synonyms .subsenses)))
           )
         )
+      (setq i (1+ i))
       )
     (identity flag)
     )
@@ -268,43 +268,45 @@
   (let ((i 0)
         (flag nil))
     (while (and (not flag) (< i (length forms)))
-      (setq i (1+ i))
       (let-alist (aref forms i)
         (if .antonyms
             (setq flag t)
           (setq flag (and .subsenses (oed-find-antonyms .subsenses)))
           )
         )
+      (setq i (1+ i))
       )
     (identity flag)
     )
   )
 
-(defun try-synonyms (lexicalForm)
+(defun try-synonyms (lexicalForm homograph)
   "Find any synonyms or antonyms for the given LEXICALFORM of the current word."
   (interactive)
+  (setq homograph (string-to-number homograph))
   (let ((return nil)
         (items (oed-jpath oed-cache '(0 lexicalEntries)))
         )
     (mapc (lambda (x)
             (progn
               (if (equal (alist-get 'lexicalCategory x nil) lexicalForm)
-                  (setq return (oed-jpath x '(entries 0 senses)))
+                  (setq return (oed-jpath x '(entries 0)))
                 )
               )
             ) items
               )
     (when return
-      (when (oed-find-synonyms return)
-        (oed-cprint "\n** Synonyms")
-        (mapc (lambda(e)
-                (oed-expand-synonym e 3)) return)
-        )
-      (when (oed-find-antonyms return)
-        (oed-cprint "\n** Antonyms")
-        (mapc (lambda(e)
-                (oed-expand-antonym e 3))
-              (oed-jpath return '(entries 0 senses)))
+      (let-alist return
+        (when (and (= (mod (string-to-number .homographNumber) 100) (mod homograph 100)) (oed-find-synonyms .senses))
+          (oed-cprint "\n** Synonyms")
+          (mapc (lambda(sense)
+                  (oed-expand-synonym sense 3)) .senses)
+          )
+        (when (and (= (mod (string-to-number .homographNumber) 100) (mod homograph 100)) (oed-find-antonyms .senses))
+          (oed-cprint "\n** Antonyms")
+          (mapc (lambda(sense)
+                  (oed-expand-antonym sense 3)) .senses )
+          )
         )
       )
     )
@@ -379,10 +381,11 @@
       (if oed-cache
           (progn
             (let ((oed-main-entry oed-cache))
+              (oed-lookup-synonyms theword)
               (oed-cprint "#+SUBTITLE: " theword)
-              (let ((bits (oed-jpath oed-main-entry '(0 lexicalEntries))))
-                (mapc (lambda(x)
-                        (let-alist x
+              (let ((forms (oed-jpath oed-main-entry '(0 lexicalEntries))))
+                (mapc (lambda(form)
+                        (let-alist form
                           (mapc (lambda(e)
                                   (oed-cprint "\n")
                                   (oed-cprint "* " .lexicalCategory)
@@ -390,15 +393,14 @@
                                     (oed-cprint "  - Pronunciation: ")
                                     (oed-expand-pronunciations .pronunciations))
                                   (oed-expand-entry e)
+                                  (try-synonyms .lexicalCategory (oed-jpath e '(homographNumber)))
                                   ) .entries)
-                          (oed-lookup-synonyms theword)
-                          (try-synonyms (oed-jpath x '(lexicalCategory)))
                           )
-                        ) bits)
+                        ) forms)
               ;;              (org-mode)
 
                 (oed-cprint "\n* Raw")
-                (oed-cprint (oed-wrap (pp-to-string bits) "#+BEGIN_SRC javascript\n" "#+END_SRC"))
+                (oed-cprint (oed-wrap (pp-to-string forms) "#+BEGIN_SRC javascript\n" "#+END_SRC"))
                 )
               )
             )
