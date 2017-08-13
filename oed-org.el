@@ -169,7 +169,7 @@
        (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
        )
       (when .notes
-        (mapc (lambda (n) (oed-cprint (unescape-string(alist-get 'text n)))) .notes))
+        (mapc (lambda (n) (oed-cprint (make-string depth ? ) "*Note:* " (unescape-string(alist-get 'text n)))) .notes))
       (when .examples
         (oed-cprint "")
         (oed-expand-examples .examples depth)
@@ -345,7 +345,7 @@
     (if .etymologies
         (oed-cprint "  - Etymology: " (decode-coding-string (oed-vhead .etymologies ) 'utf-8)))
     (when .notes
-      (mapc (lambda (n) (oed-cprint "\n" (unescape-string(alist-get 'text n)))) .notes))
+      (mapc (lambda (n) (oed-cprint "\n *Note:* " (unescape-string(alist-get 'text n)))) .notes))
     (oed-cprint "")
     (mapc 'oed-expand-sense .senses)
   ))
