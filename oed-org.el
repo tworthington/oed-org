@@ -52,6 +52,7 @@
 (defun oed-lookup (url)
   "Fetch data from the given URL and set oed-cache to the .results part thereof."
   (interactive "s")
+  (setq oed-cache nil)
   (request url
    :headers `(("app_id" . ,oed-app-id)
               ("app_key" . ,oed-app-key)
@@ -77,6 +78,14 @@
   (interactive "s")
   (oed-lookup
    (concat "https://od-api.oxforddictionaries.com:443/api/v1/inflections/en/" (url-encode-url word))))
+
+(defun oed-lookup-synonyms (word)
+  "Lookup WORD in the entries section."
+  (interactive "s")
+  (oed-lookup
+   (concat "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/" (url-encode-url word) "/synonyms;antonyms"))
+)
+
 
 (defun oed-jpath (data path)
   "Access element of DATA using a PATH of the form (index index....) where an index is either an array index or a string."
@@ -107,6 +116,11 @@
   "Concatenate and print things"
   (mapc 'princ things)
   (terpri nil t))
+
+(defun oed-clprint (&rest things)
+  "Concatenate and print things without newline"
+  (mapc 'princ things))
+
 
 (defun oed-printcdrs(things &optional label pre post)
   "Print the cdrs of things (which is assumed to be an associative list) one per line labeled with label"
@@ -144,7 +158,7 @@
   "Print the definition of a sense sub-tree (RAW), the examples associated with it, and recursively expand any sub-senses. Add indentation and stars appropriate to an org entry of DEPTH."
   (or depth (setq depth 2))
   (let-alist raw
-    (setq .definitions (or .definitions .crossReferenceMarkers))
+    (setq .definitions (or .definitions .crossReferenceMarkers ))
     (when .definitions
       (oed-cprint
        "\n"
@@ -166,6 +180,102 @@
       ))
   )
 
+(defun oed-expand-synonym (raw &optional depth)
+  "Print the definition of a sense sub-tree (RAW), the examples associated with it, and recursively expand any sub-senses. Add indentation and stars appropriate to an org entry of DEPTH."
+  (or depth (setq depth 2))
+  (let-alist raw
+    (if .examples
+        (progn
+          (oed-clprint "\n"
+                (make-string depth ?*)
+                (unescape-string (concat " /"
+                                         (oed-listcollect .examples 'text "/ /")
+                                         "/"
+                                         ))
+                " "))
+      (oed-clprint (make-string depth ? ) "- *Related* "))
+    (oed-clprint
+     (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
+     (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
+     )
+    (oed-cprint
+     "\n"
+     (make-string (+ 2 depth) ? )
+     "- "
+     (unescape-string (oed-listcollect .synonyms 'text))
+     )
+
+    (when (and .subsenses)
+      (oed-cprint "")
+      (mapc (lambda(s)(oed-expand-synonym s (+ 3 depth))) .subsenses)
+      )
+
+    )
+  )
+
+(defun oed-expand-antonym (raw &optional depth)
+  "Print the definition of a sense sub-tree (RAW), the examples associated with it, and recursively expand any sub-senses. Add indentation and stars appropriate to an org entry of DEPTH."
+  (or depth (setq depth 2))
+  (let-alist raw
+    (when (or .examples .antonyms)
+    (if .examples
+        (progn
+          (oed-clprint "\n"
+                (make-string depth ?*)
+                (unescape-string (concat " /"
+                                         (oed-listcollect .examples 'text "/ /")
+                                         "/"
+                                         ))
+                " "))
+      (oed-clprint (make-string depth ? ) "- *Related* "))
+    (oed-clprint
+     (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
+     (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
+     )
+    (oed-cprint
+     "\n"
+     (make-string (+ 2 depth) ? )
+     "- "
+     (unescape-string (oed-listcollect .antonyms 'text))
+     )
+
+    (when (and .subsenses (oed-listcollect .subsenses 'antonyms))
+      (oed-cprint "")
+      (mapc (lambda(s)(oed-expand-antonym s (+ 3 depth))) .subsenses)
+      )
+
+    )
+  )
+)
+
+(defun try-synonyms (lexicalForm)
+  (interactive)
+
+  (let ((return nil)
+        (items (oed-jpath oed-cache '(0 lexicalEntries)))
+        )
+    (mapc (lambda (x)
+            (progn
+              (if (equal (alist-get 'lexicalCategory x nil) lexicalForm)
+                  (setq return x)
+                )
+              )
+            ) items
+              )
+    (when return
+      (oed-cprint "\n** Synonyms")
+      (mapc (lambda(e)
+              (oed-expand-synonym e 3))
+            (oed-jpath return '(entries 0 senses)))
+
+            (oed-cprint "\n** Antonyms")
+      (mapc (lambda(e)
+              (oed-expand-antonym e 3))
+            (oed-jpath return '(entries 0 senses)))
+      )
+    )
+  )
+
 (defun oed-expand-pronunciations(list)
   (mapc (lambda(p)
           (let-alist p
@@ -180,12 +290,13 @@
           ) list)
   )
 
-(defun oed-listcollect(data key)
+(defun oed-listcollect(data key &optional delim)
+  (or delim (setq delim ", "))
   (let (result)
     (setq result
           (mapcar (lambda(i)
                     (alist-get key i)) data))
-    (string-join result ", ")))
+    (string-join result delim)))
 
 (defun oed-expand-entry (raw)
   "Print the basics information about an individual word usage, parsing out the RAW data."
@@ -211,7 +322,6 @@
 (defun oed-quickword ()
   "Look up the word at point and put the result in the mini-buffer fence"
   (interactive)
-  (setq oed-cache nil)
   (let (
         (theword
          (downcase
@@ -234,27 +344,31 @@
         )
       (if oed-cache
           (progn
-            (oed-cprint "#+SUBTITLE: " theword)
-            (let ((bits (oed-jpath oed-cache '(0 lexicalEntries))))
-              (mapc (lambda(x)
-                      (let-alist x
-                        (mapc (lambda(e)
-                                (oed-cprint "\n")
-                                (oed-cprint "* " (oed-jpath x '(lexicalCategory)))
-                                (when .pronunciations
-                                  (oed-cprint "  - Pronunciation: ")
-                                  (oed-expand-pronunciations .pronunciations))
-                                (oed-expand-entry e)
-                                ) .entries)
-                        )
-                      ) bits)
+            (let ((oed-main-entry oed-cache))
+              (oed-cprint "#+SUBTITLE: " theword)
+              (let ((bits (oed-jpath oed-main-entry '(0 lexicalEntries))))
+                (mapc (lambda(x)
+                        (let-alist x
+                          (mapc (lambda(e)
+                                  (oed-cprint "\n")
+                                  (oed-cprint "* " (oed-jpath x '(lexicalCategory)))
+                                  (when .pronunciations
+                                    (oed-cprint "  - Pronunciation: ")
+                                    (oed-expand-pronunciations .pronunciations))
+                                  (oed-expand-entry e)
+                                  ) .entries)
+                          (oed-lookup-synonyms theword)
+                          (try-synonyms (oed-jpath x '(lexicalCategory)))
+                          )
+                        ) bits)
               ;;              (org-mode)
 
-              (oed-cprint "\n* Raw")
-              (oed-cprint (oed-wrap (pp-to-string bits) "#+BEGIN_SRC javascript\n" "#+END_SRC"))
+                (oed-cprint "\n* Raw")
+                (oed-cprint (oed-wrap (pp-to-string bits) "#+BEGIN_SRC javascript\n" "#+END_SRC"))
+                )
               )
             )
-        (oed-cprint theword " not found!")
+            (oed-cprint theword " not found!")
         ))))
 
 (defun mplayer-mp3-link()
@@ -274,7 +388,3 @@
 
 (provide 'oed-org)
 ;;; oed-org.el ends here
-
-                      (let ((entries (oed-jpath x '(entries)))
-                            (speech (oed-jpath x '(pronunciations)))
-                            )
