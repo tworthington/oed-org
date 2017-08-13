@@ -397,8 +397,6 @@
                                   ) .entries)
                           )
                         ) forms)
-              ;;              (org-mode)
-
                 (oed-cprint "\n* Raw")
                 (oed-cprint (oed-wrap (pp-to-string forms) "#+BEGIN_SRC javascript\n" "#+END_SRC"))
                 )
