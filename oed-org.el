@@ -238,40 +238,74 @@
      "- "
      (unescape-string (oed-listcollect .antonyms 'text))
      )
-
     (when (and .subsenses (oed-listcollect .subsenses 'antonyms))
       (oed-cprint "")
       (mapc (lambda(s)(oed-expand-antonym s (+ 3 depth))) .subsenses)
       )
-
     )
   )
 )
 
-(defun try-synonyms (lexicalForm)
-  (interactive)
+(defun oed-find-synonyms (forms)
+  "Does FORMS contain any synonyms or subsenses with synonyms?"
+  (let ((i 0)
+        (flag nil))
+    (while (and (not flag) (< i (length forms)))
+      (setq i (1+ i))
+      (let-alist (aref forms i)
+        (if .synonyms
+            (setq flag t)
+          (setq flag (and .subsenses (oed-find-synonyms .subsenses)))
+          )
+        )
+      )
+    (identity flag)
+    )
+  )
 
+(defun oed-find-antonyms (forms)
+  "Does FORMS contain any antonyms or subsenses with antonyms?"
+  (let ((i 0)
+        (flag nil))
+    (while (and (not flag) (< i (length forms)))
+      (setq i (1+ i))
+      (let-alist (aref forms i)
+        (if .antonyms
+            (setq flag t)
+          (setq flag (and .subsenses (oed-find-antonyms .subsenses)))
+          )
+        )
+      )
+    (identity flag)
+    )
+  )
+
+(defun try-synonyms (lexicalForm)
+  "Find any synonyms or antonyms for the given LEXICALFORM of the current word."
+  (interactive)
   (let ((return nil)
         (items (oed-jpath oed-cache '(0 lexicalEntries)))
         )
     (mapc (lambda (x)
             (progn
               (if (equal (alist-get 'lexicalCategory x nil) lexicalForm)
-                  (setq return x)
+                  (setq return (oed-jpath x '(entries 0 senses)))
                 )
               )
             ) items
               )
     (when return
-      (oed-cprint "\n** Synonyms")
-      (mapc (lambda(e)
-              (oed-expand-synonym e 3))
-            (oed-jpath return '(entries 0 senses)))
-
-            (oed-cprint "\n** Antonyms")
-      (mapc (lambda(e)
-              (oed-expand-antonym e 3))
-            (oed-jpath return '(entries 0 senses)))
+      (when (oed-find-synonyms return)
+        (oed-cprint "\n** Synonyms")
+        (mapc (lambda(e)
+                (oed-expand-synonym e 3)) return)
+        )
+      (when (oed-find-antonyms return)
+        (oed-cprint "\n** Antonyms")
+        (mapc (lambda(e)
+                (oed-expand-antonym e 3))
+              (oed-jpath return '(entries 0 senses)))
+        )
       )
     )
   )
@@ -351,7 +385,7 @@
                         (let-alist x
                           (mapc (lambda(e)
                                   (oed-cprint "\n")
-                                  (oed-cprint "* " (oed-jpath x '(lexicalCategory)))
+                                  (oed-cprint "* " .lexicalCategory)
                                   (when .pronunciations
                                     (oed-cprint "  - Pronunciation: ")
                                     (oed-expand-pronunciations .pronunciations))
