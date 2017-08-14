@@ -280,7 +280,7 @@
     )
   )
 
-(defun try-synonyms (lexicalForm homograph)
+(defun oed-try-synonyms (lexicalForm homograph)
   "Find any synonyms or antonyms for the given LEXICALFORM of the current word."
   (interactive)
   (setq homograph (string-to-number homograph))
@@ -400,7 +400,7 @@
                                     (oed-cprint "  - Pronunciation: ")
                                     (oed-expand-pronunciations .pronunciations))
                                   (oed-expand-entry e)
-                                  (try-synonyms .lexicalCategory (oed-jpath e '(homographNumber)))
+                                  (oed-try-synonyms .lexicalCategory (oed-jpath e '(homographNumber)))
                                   ) .entries)
                           )
                         ) forms)
