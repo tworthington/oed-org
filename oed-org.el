@@ -166,10 +166,12 @@
        " "
        (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
        (unescape-string (oed-vhead .definitions))
-       (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
+       (if .registers (concat " [" (string-join (append .registers nil) ", " ) "] ") "" )
        )
       (when .notes
         (mapc (lambda (n) (oed-cprint (make-string depth ? ) "*Note:* " (unescape-string(alist-get 'text n)))) .notes))
+      (when .crossReferenceMarkers
+        (mapc (lambda (n) (oed-cprint (make-string depth ? ) " " (unescape-string n))) .crossReferenceMarkers))
       (when .examples
         (oed-cprint "")
         (oed-expand-examples .examples depth)
