@@ -403,6 +403,9 @@
                                   (when .pronunciations
                                     (oed-cprint "  - Pronunciation: ")
                                     (oed-expand-pronunciations .pronunciations))
+                                  (when .derivativeOf
+                                    (oed-cprint "  - Form of: " (oed-jpath .derivativeOf '(0 text))))
+
                                   (oed-expand-entry e)
                                   (oed-try-synonyms .lexicalCategory (oed-jpath e '(homographNumber)))
                                   ) .entries)
