@@ -190,7 +190,7 @@
             (oed-clprint "\n"
                          (make-string depth ?*)
                          (unescape-string (concat " /"
-                                                  (oed-listcollect .examples 'text "/ /")
+                                                  (oed-listcollect .examples 'text "/; /")
                                                   "/"
                                                   ))
                          " "))
@@ -223,7 +223,7 @@
             (oed-clprint "\n"
                          (make-string depth ?*)
                          (unescape-string (concat " /"
-                                                  (oed-listcollect .examples 'text "/ /")
+                                                  (oed-listcollect .examples 'text "/; /")
                                                   "/"
                                                   ))
                          " "))
@@ -286,6 +286,7 @@
   (setq homograph (string-to-number homograph))
   (let ((return nil)
         (items (oed-jpath oed-cache '(0 lexicalEntries)))
+        (homographclass (truncate homograph 100))
         )
     (mapc (lambda (x)
             (progn
@@ -297,13 +298,19 @@
               )
     (when return
       (let-alist return
-        (when (and (= (mod (string-to-number .homographNumber) 100) (mod homograph 100)) (oed-find-synonyms .senses))
-          (oed-cprint "\n** Synonyms")
+        (when (and (oed-find-synonyms .senses)
+                   (or (= 0 (string-to-number .homographNumber))
+                       (= (truncate (string-to-number .homographNumber) 100) homographclass))
+                   )
+          (oed-cprint "\n** Synonyms ")
           (mapc (lambda(sense)
                   (oed-expand-synonym sense 3)) .senses)
           )
-        (when (and (= (mod (string-to-number .homographNumber) 100) (mod homograph 100)) (oed-find-antonyms .senses))
-          (oed-cprint "\n** Antonyms")
+        (when (and (oed-find-antonyms .senses)
+                   (or (= 0 (string-to-number .homographNumber))
+                       (= (truncate (string-to-number .homographNumber) 100) homographclass))
+                   )
+          (oed-cprint "\n** Antonyms ")
           (mapc (lambda(sense)
                   (oed-expand-antonym sense 3)) .senses )
           )
