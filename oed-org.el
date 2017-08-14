@@ -170,6 +170,8 @@
       )
     (when .notes
       (mapc (lambda (n) (oed-cprint (make-string depth ? ) "*Note:* " (unescape-string(alist-get 'text n)))) .notes))
+    (if .variantForms
+        (oed-cprint "  - Also: " (unescape-string (oed-listcollect .variantForms  'text))))
     (when (and .crossReferenceMarkers (not .definitions))
       (mapc (lambda (n) (oed-cprint (make-string depth ? ) "\n - " (unescape-string n))) .crossReferenceMarkers))
     (when .examples
@@ -360,13 +362,15 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
 (defun oed-expand-entry (raw)
   "Print the basics information about an individual word usage, parsing out the RAW data."
   (let-alist raw
-    (if .grammaticalFeatures
-        (oed-cprint "  - " (unescape-string (oed-paircollect .grammaticalFeatures 'type 'text))))
     (when .pronunciations
       (oed-cprint "  - Pronunciation: ")
       (oed-expand-pronunciations .pronunciations))
     (if .etymologies
-        (oed-cprint "  - Etymology: " (decode-coding-string (oed-vhead .etymologies ) 'utf-8)))
+        (oed-cprint "  - Etymology: " (unescape-string (oed-vhead .etymologies ))))
+    (if .grammaticalFeatures
+        (oed-cprint "  - Grammar: " (unescape-string (oed-paircollect .grammaticalFeatures 'type 'text))))
+    (if .variantForms
+        (oed-cprint "  - Also: " (unescape-string (oed-listcollect .variantForms  'text))))
     (when .notes
       (mapc (lambda (n) (oed-cprint "\n *Note:* " (unescape-string(alist-get 'text n)))) .notes))
     (oed-cprint "")
@@ -417,7 +421,8 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
                                     (oed-expand-pronunciations .pronunciations))
                                   (when .derivativeOf
                                     (oed-cprint "  - Form of: " (oed-jpath .derivativeOf '(0 text))))
-
+                                  (if .text
+                                      (oed-cprint "  - Capitalisation: " (unescape-string .text)))
                                   (oed-expand-entry e)
                                   (oed-try-synonyms .lexicalCategory (oed-jpath e '(homographNumber)))
                                   ) .entries)
