@@ -283,9 +283,9 @@
   )
 
 (defun oed-try-synonyms (lexicalForm homograph)
-  "Find any synonyms or antonyms for the given LEXICALFORM of the current word."
+  "Find any synonyms or antonyms for the given LEXICALFORM and HOMOGRAPH of the current word."
   (interactive)
-  (setq homograph (string-to-number homograph))
+  (setq homograph (mod (string-to-number homograph) 100))
   (let ((return nil)
         (items (oed-jpath oed-cache '(0 lexicalEntries)))
         (homographclass (truncate homograph 100))
@@ -302,7 +302,7 @@
       (let-alist return
         (when (and (oed-find-synonyms .senses)
                    (or (= 0 (string-to-number .homographNumber))
-                       (= (truncate (string-to-number .homographNumber) 100) homographclass))
+                       (= (mod (string-to-number .homographNumber) 100) homograph))
                    )
           (oed-cprint "\n** Synonyms ")
           (mapc (lambda(sense)
@@ -310,7 +310,7 @@
           )
         (when (and (oed-find-antonyms .senses)
                    (or (= 0 (string-to-number .homographNumber))
-                       (= (truncate (string-to-number .homographNumber) 100) homographclass))
+                       (= (mod (string-to-number .homographNumber) 100) homograph))
                    )
           (oed-cprint "\n** Antonyms ")
           (mapc (lambda(sense)
@@ -335,12 +335,14 @@
           ) list)
   )
 
-(defun oed-listcollect(data key &optional delim)
+(defun oed-listcollect(a-list key &optional delim)
+  "Take A-LIST and make a new list for any elements with a key matching KEY.
+  Join this list into a string using DELIM as a separator ( '. ' as default)"
   (or delim (setq delim ", "))
   (let (result)
     (setq result
           (mapcar (lambda(i)
-                    (alist-get key i)) data))
+                    (alist-get key i)) a-list))
     (string-join result delim)))
 
 (defun oed-expand-entry (raw)
@@ -365,7 +367,7 @@
   )
 
 (defun oed-quickword ()
-  "Look up the word at point and put the result in the mini-buffer fence"
+  "Look up the word at point and put the result in a buffer of its own."
   (interactive)
   (let (
         (theword
