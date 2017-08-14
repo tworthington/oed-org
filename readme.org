@@ -8,7 +8,7 @@ The key and id should be put into the "oed-org" customization group.
 
 * Things to do
  - [X] Allow selection of a region to define compound phrases like "personal pronoun".
- - [ ] Show synonyms and antonyms
+ - [X] Show synonyms and antonyms
  - [ ] Handle things like superlatives better so that the linkage and grammatical relationship is clearer
  - [ ] Some sort of history function for when following a thread of word definitions (maybe undo?)
  - [ ] Try to do something with cross-references
