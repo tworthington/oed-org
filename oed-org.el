@@ -86,7 +86,6 @@
    (concat "https://od-api.oxforddictionaries.com:443/api/v1/entries/en/" (url-encode-url word) "/synonyms;antonyms"))
 )
 
-
 (defun oed-jpath (data path)
   "Access element of DATA using a PATH of the form (index index....) where an index is either an array index or a string."
   (let ((dp (copy-tree data))
@@ -158,7 +157,7 @@
   "Print the definition of a sense sub-tree (RAW), the examples associated with it, and recursively expand any sub-senses. Add indentation and stars appropriate to an org entry of DEPTH."
   (or depth (setq depth 2))
   (let-alist raw
-    (setq .definitions (or .definitions .crossReferenceMarkers ))
+;    (setq .definitions (or .definitions .crossReferenceMarkers ))
     (when .definitions
       (oed-cprint
        "\n"
@@ -168,14 +167,15 @@
        (unescape-string (oed-vhead .definitions))
        (if .registers (concat " [" (string-join (append .registers nil) ", " ) "] ") "" )
        )
-      (when .notes
-        (mapc (lambda (n) (oed-cprint (make-string depth ? ) "*Note:* " (unescape-string(alist-get 'text n)))) .notes))
-      (when .crossReferenceMarkers
-        (mapc (lambda (n) (oed-cprint (make-string depth ? ) " " (unescape-string n))) .crossReferenceMarkers))
-      (when .examples
-        (oed-cprint "")
-        (oed-expand-examples .examples depth)
-        ))
+      )
+    (when .notes
+      (mapc (lambda (n) (oed-cprint (make-string depth ? ) "*Note:* " (unescape-string(alist-get 'text n)))) .notes))
+    (when (and .crossReferenceMarkers (not .definitions))
+      (mapc (lambda (n) (oed-cprint (make-string depth ? ) "\n - " (unescape-string n))) .crossReferenceMarkers))
+    (when .examples
+      (oed-cprint "")
+      (oed-expand-examples .examples depth)
+      )
     (when .subsenses
       (oed-cprint "")
       (mapc (lambda(s)(oed-expand-sense s (1+ depth))) .subsenses)
