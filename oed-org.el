@@ -345,11 +345,23 @@
                     (alist-get key i)) a-list))
     (string-join result delim)))
 
+(defun oed-paircollect(a-list key1 key2 &optional delimPairs delimSets)
+  "Take A-LIST and make a new list of pairse for any elements with a key matching KEY2
+and a label KEY1. Separate the pairs with DELIMPAIRS  (': ' as default
+Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
+  (or delimPairs (setq delimPairs ": "))
+  (or delimSets (setq delimSets ", "))
+  (let (result)
+    (setq result
+          (mapcar (lambda(i)
+                    (concat (alist-get key1 i) delimPairs (alist-get key2 i))) a-list))
+    (string-join result delimSets)))
+
 (defun oed-expand-entry (raw)
   "Print the basics information about an individual word usage, parsing out the RAW data."
   (let-alist raw
     (if .grammaticalFeatures
-        (oed-cprint "  - " (unescape-string (oed-listcollect .grammaticalFeatures 'text))))
+        (oed-cprint "  - " (unescape-string (oed-paircollect .grammaticalFeatures 'type 'text))))
     (when .pronunciations
       (oed-cprint "  - Pronunciation: ")
       (oed-expand-pronunciations .pronunciations))
