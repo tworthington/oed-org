@@ -368,7 +368,7 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
     (if .etymologies
         (oed-cprint "  - Etymology: " (unescape-string (oed-vhead .etymologies ))))
     (if .grammaticalFeatures
-        (oed-cprint "  - Grammar: " (unescape-string (oed-paircollect .grammaticalFeatures 'type 'text))))
+        (oed-cprint "  - Grammar:\n     " (unescape-string (oed-paircollect .grammaticalFeatures 'type 'text))))
     (if .variantForms
         (oed-cprint "  - Also: " (unescape-string (oed-listcollect .variantForms  'text))))
     (when .notes
