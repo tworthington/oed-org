@@ -185,7 +185,8 @@
   )
 
 (defun oed-expand-synonym (raw &optional depth)
-  "Print the definition of a sense sub-tree (RAW), the examples associated with it, and recursively expand any sub-senses. Add indentation and stars appropriate to an org entry of DEPTH."
+    "Search a sense sub-tree (RAW) for antonyms, the examples associated with it, and recursively expand any sub-senses, outputing as we go.
+Add indentation and stars appropriate to an org entry of DEPTH."
   (or depth (setq depth 2))
   (let-alist raw
     (when .synonyms
@@ -218,7 +219,8 @@
 )
 
 (defun oed-expand-antonym (raw &optional depth)
-  "Print the definition of a sense sub-tree (RAW), the examples associated with it, and recursively expand any sub-senses. Add indentation and stars appropriate to an org entry of DEPTH."
+  "Search a sense sub-tree (RAW) for antonyms, the examples associated with it, and recursively expand any sub-senses, outputing as we go.
+Add indentation and stars appropriate to an org entry of DEPTH."
   (or depth (setq depth 2))
   (let-alist raw
     (when .antonyms
