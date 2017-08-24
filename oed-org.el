@@ -210,13 +210,13 @@ Add indentation and stars appropriate to an org entry of DEPTH."
        "- "
        (unescape-string (oed-listcollect .synonyms 'text))
        )
-      (when (and .subsenses (oed-listcollect .subsenses 'synonyms)))
-      (oed-cprint "")
-      (mapc (lambda(s)(oed-expand-synonym s (+ 3 depth))) .subsenses)
+      (when  (and .subsenses (oed-find-synonyms .subsenses))
+       (oed-cprint "")
+        (mapc (lambda(s)(oed-expand-synonym s (+ 3 depth))) .subsenses)
+        )
       )
     )
   )
-)
 
 (defun oed-expand-antonym (raw &optional depth)
   "Search a sense sub-tree (RAW) for antonyms, the examples associated with it, and recursively expand any sub-senses, outputing as we go.
@@ -244,7 +244,7 @@ Add indentation and stars appropriate to an org entry of DEPTH."
        "- "
        (unescape-string (oed-listcollect .antonyms 'text))
        )
-      (when (and .subsenses (oed-listcollect .subsenses 'antonyms))
+      (when (and .subsenses (oed-find-antonyms .subsenses))
         (oed-cprint "")
         (mapc (lambda(s)(oed-expand-antonym s (+ 3 depth))) .subsenses)
         )
