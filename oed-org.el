@@ -382,6 +382,8 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
 (defun oed-bufferset()
   "Things to do to the buffer after it's filled with the OED data."
   (indent-region (point-min) (point-max))
+  (use-local-map (copy-keymap org-mode-map))
+    (local-set-key "q" 'quit-window)
   )
 
 (defun oed-quickword ()
