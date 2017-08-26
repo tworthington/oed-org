@@ -50,7 +50,7 @@
   (decode-coding-string s 'utf-8))
 
 (defun oed-lookup (url)
-  "Fetch data from the given URL and set oed-cache to the .results part thereof."
+  "Fetch data from the given URL and set oed-cache to the .results part thereof. Hide errors."
   (interactive "s")
   (setq oed-cache nil)
   (request url
@@ -59,6 +59,7 @@
               ("Accept" . "application/json"))
    :parser 'json-read
    :sync t
+   :error (cl-function ((lambda (&key data &allow-other-keys) )))
    :timeout 10
    :success (cl-function (lambda (&key data &allow-other-keys)
                            (let-alist data
