@@ -291,40 +291,30 @@ Add indentation and stars appropriate to an org entry of DEPTH."
   (setq homograph (mod (string-to-number homograph) 100))
   (let ((return nil)
         (items (oed-jpath oed-cache '(0 lexicalEntries)))
-        (homographclass (truncate homograph 100))
-        )
+        (homographclass (truncate homograph 100)))
     (mapc (lambda (x)
             (progn
               (if (equal (alist-get 'lexicalCategory x nil) lexicalForm)
-                  (setq return (oed-jpath x '(entries 0)))
-                )
-              )
-            ) items
-              )
+                  (setq return (oed-jpath x '(entries 0)))))) items
+                  )
     (when return
       (let-alist return
         (when (and (oed-find-synonyms .senses)
                    (or (= 0 (string-to-number .homographNumber))
-                       (= (mod (string-to-number .homographNumber) 100) homograph))
-                   )
+                       (= (mod (string-to-number .homographNumber) 100) homograph)))
           (oed-cprint "\n** Synonyms ")
           (mapc (lambda(sense)
-                  (oed-expand-synonym sense 3)) .senses)
-          )
+                  (oed-expand-synonym sense 3)) .senses))
         (when (and (oed-find-antonyms .senses)
                    (or (= 0 (string-to-number .homographNumber))
-                       (= (mod (string-to-number .homographNumber) 100) homograph))
-                   )
+                       (= (mod (string-to-number .homographNumber) 100) homograph)))
           (oed-cprint "\n** Antonyms ")
           (mapc (lambda(sense)
-                  (oed-expand-antonym sense 3)) .senses )
-          )
-        )
-      )
-    )
-  )
+                  (oed-expand-antonym sense 3)) .senses ))))))
 
 (defun oed-expand-pronunciations(list)
+  "Try to create org links to audio files, otherwise just
+show phonetic text for word."
   (mapc (lambda(p)
           (let-alist p
             (oed-cprint "   - Dialects: " (string-join .dialects ", "))
