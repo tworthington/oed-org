@@ -17,10 +17,10 @@ The key and id should be put into the "oed-org" customization group.
    - [ ] Work out how to mark dependencies in packages
    - [X] De-factorise the two request calls into one fn
    - [ ] Add proper comments to everything
- - [ ] Remove the "Raw" section from output, or at least make it minimised by default.
+ - [X] Remove the "Raw" section from output, or at least make it minimised by default.
 
 * Notes
-This is my first major application using Elisp and if you read the code you can actually see the learning curve happen.
+This is my first major (i.e., not concerned just with editing in Emacs itself) application using Elisp and if you read the code you can actually see the learning curve happen.
 
 It relies on the request package and currently that seems to mean that it has to use a global (called 'cache' at the moment). I'm sure there's a way around this somehow.
 
