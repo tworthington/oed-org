@@ -191,18 +191,17 @@ Add indentation and stars appropriate to an org entry of DEPTH."
   (let-alist raw
     (when .synonyms
       (if .examples
-          (progn
             (oed-clprint "\n"
                          (make-string depth ?*)
                          (unescape-string (concat " /"
                                                   (oed-listcollect .examples 'text "/; /")
                                                   "/"
                                                   ))
-                         " "))
-        (oed-clprint (make-string depth ? ) "- *Related* "))
+                         " ")
+        (oed-clprint (make-string depth ? ) "- "))
       (oed-clprint
-       (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
-       (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
+       (if (or .examples .regions .domains .registers) "" "*Related* ")
+       (if (or .regions .domains .registers) (concat "[" (string-join (append .domains (append .regions (append .registers nil))) ", " ) "]") "" )
        )
       (oed-cprint
        "\n"
@@ -225,18 +224,17 @@ Add indentation and stars appropriate to an org entry of DEPTH."
   (let-alist raw
     (when .antonyms
       (if .examples
-          (progn
-            (oed-clprint "\n"
-                         (make-string depth ?*)
-                         (unescape-string (concat " /"
-                                                  (oed-listcollect .examples 'text "/; /")
-                                                  "/"
-                                                  ))
-                         " "))
-        (oed-clprint (make-string depth ? ) "- *Related* "))
+          (oed-clprint "\n"
+                       (make-string depth ?*)
+                       (unescape-string (concat " /"
+                                                (oed-listcollect .examples 'text "/; /")
+                                                "/"
+                                                ))
+                       " ")
+        (oed-clprint (make-string depth ? ) "- "))
       (oed-clprint
-       (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
-       (if .registers (concat " [" (string-join (append .registers nil) ", " ) "]") "" )
+       (if (or .examples .regions .domains .registers) "" "*Related* ")
+       (if (or .regions .domains .registers) (concat "[" (string-join (append .domains (append .regions (append .registers nil))) ", " ) "]") "" )
        )
       (oed-cprint
        "\n"
@@ -383,7 +381,8 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
   "Things to do to the buffer after it's filled with the OED data."
   (indent-region (point-min) (point-max))
   (use-local-map (copy-keymap org-mode-map))
-    (local-set-key "q" 'quit-window)
+  (local-set-key "q" 'quit-window)
+  (org-shifttab 3)
   )
 
 (defun oed-quickword ()
