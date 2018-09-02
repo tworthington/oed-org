@@ -18,6 +18,7 @@ The key and id should be put into the "oed-org" customization group.
    - [X] De-factorise the two request calls into one fn
    - [ ] Add proper comments to everything
  - [X] Remove the "Raw" section from output, or at least make it minimised by default.
+   - [X] Take a universal argument and only show raw data if it is not nil
 
 * Notes
 This is my first major (i.e., not concerned just with editing in Emacs itself) application using Elisp and if you read the code you can actually see the learning curve happen.

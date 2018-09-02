@@ -380,9 +380,9 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
   (org-shifttab 3)
   )
 
-(defun oed-quickword ()
+(defun oed-quickword (&optional showraw)
   "Look up the word at point and put the result in a buffer of its own."
-  (interactive)
+  (interactive "P")
   (let (
         (theword
          (downcase
@@ -426,7 +426,8 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
                                   ) .entries)
                           )
                         ) forms)
-                (oed-cprint "\n* Raw")
+                (if showraw
+                    (oed-cprint "\n* Raw"))
                 (oed-cprint (oed-wrap (pp-to-string forms) "#+BEGIN_SRC javascript\n" "#+END_SRC"))
                 )
               )
