@@ -144,6 +144,10 @@
   (or post (setq post pre))
   (concat pre thing post))
 
+(defun oed-string-join (seq sep)
+  "Join the (string) contents of seq using the (string) sep"
+  (mapconcat 'identity seq sep))
+
 (defun oed-expand-examples(raw depth)
   "Present any examples (RAW) as italicised text indented to DEPTH."
   (let ((examples raw)
@@ -151,7 +155,7 @@
     (mapc (lambda(e)(let-alist e
                        (setq extext (concat "/" .text "/"))
                        (if .registers
-                           (setq extext (concat "[" (string-join (append .registers nil) ",") "] " extext)))
+                           (setq extext (concat "[" (oed-string-join (append .registers nil) ",") "] " extext)))
                        (oed-cprint (make-string depth ? ) "- " (unescape-string extext)))) examples)))
 
 (defun oed-expand-sense (raw &optional depth)
@@ -164,9 +168,9 @@
        "\n"
        (make-string depth ?*)
        " "
-       (if (or .regions .domains) (concat "[" (string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
+       (if (or .regions .domains) (concat "[" (oed-string-join (append .domains (append .regions nil)) ", " ) "] ") "" )
        (unescape-string (oed-vhead .definitions))
-       (if .registers (concat " [" (string-join (append .registers nil) ", " ) "] ") "" )
+       (if .registers (concat " [" (oed-string-join (append .registers nil) ", " ) "] ") "" )
        )
       )
     (when .notes
@@ -202,7 +206,7 @@ Add indentation and stars appropriate to an org entry of DEPTH."
         (oed-clprint (make-string depth ? ) "- "))
       (oed-clprint
        (if (or .examples .regions .domains .registers) "" "*Related* ")
-       (if (or .regions .domains .registers) (concat "[" (string-join (append .domains (append .regions (append .registers nil))) ", " ) "]") "" )
+       (if (or .regions .domains .registers) (concat "[" (oed-string-join (append .domains (append .regions (append .registers nil))) ", " ) "]") "" )
        )
       (oed-cprint
        "\n"
@@ -235,7 +239,7 @@ Add indentation and stars appropriate to an org entry of DEPTH."
         (oed-clprint (make-string depth ? ) "- "))
       (oed-clprint
        (if (or .examples .regions .domains .registers) "" "*Related* ")
-       (if (or .regions .domains .registers) (concat "[" (string-join (append .domains (append .regions (append .registers nil))) ", " ) "]") "" )
+       (if (or .regions .domains .registers) (concat "[" (oed-string-join (append .domains (append .regions (append .registers nil))) ", " ) "]") "" )
        )
       (oed-cprint
        "\n"
@@ -317,7 +321,7 @@ Add indentation and stars appropriate to an org entry of DEPTH."
 show phonetic text for word."
   (mapc (lambda(p)
           (let-alist p
-            (oed-cprint "   - Dialects: " (string-join .dialects ", "))
+            (oed-cprint "   - Dialects: " (oed-string-join .dialects ", "))
             (cond ((and .phoneticSpelling .audioFile)
                    (oed-cprint "     - [[" .audioFile "][" (unescape-string .phoneticSpelling) "]]"))
                   ((or .audioFile)
@@ -336,7 +340,7 @@ show phonetic text for word."
     (setq result
           (mapcar (lambda(i)
                     (alist-get key i)) a-list))
-    (string-join result delim)))
+    (oed-string-join result delim)))
 
 (defun oed-paircollect(a-list key1 key2 &optional delimPairs delimSets)
   "Take A-LIST and make a new list of pairse for any elements with a key matching KEY2
@@ -348,7 +352,7 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
     (setq result
           (mapcar (lambda(i)
                     (concat (alist-get key1 i) delimPairs (alist-get key2 i))) a-list))
-    (string-join result delimSets)))
+    (oed-string-join result delimSets)))
 
 (defun oed-expand-entry (raw)
   "Print the basics information about an individual word usage, parsing out the RAW data."
