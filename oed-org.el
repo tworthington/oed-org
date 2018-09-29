@@ -426,9 +426,9 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
                                   ) .entries)
                           )
                         ) forms)
-                (if showraw
-                    (oed-cprint "\n* Raw"))
-                (oed-cprint (oed-wrap (pp-to-string forms) "#+BEGIN_SRC javascript\n" "#+END_SRC"))
+                (when showraw
+                  (oed-cprint "\n* Raw")
+                  (oed-cprint (oed-wrap (pp-to-string forms) "#+BEGIN_SRC javascript\n" "#+END_SRC")))
                 )
               )
             )
