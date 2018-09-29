@@ -380,6 +380,24 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
   (org-shifttab 3)
   )
 
+(defun word-near-point()
+  (interactive)
+  "Word-at-point if we're on a word; otherwise try looking backwards, then forwards."
+  (if (and (<(point) (point-max))
+           (= (syntax-class (syntax-after (point))) 2))
+      (word-at-point)
+    (if (> (point) (point-min))
+        (skip-syntax-backward "^w"))
+    (if (> (point) (point-min))
+        (backward-char))
+    (if (eq (syntax-class (syntax-after (point))) 2)
+        (word-at-point)
+      (skip-syntax-forward "^w")
+      (word-at-point)
+      )
+    )
+  )
+
 (defun oed-quickword (&optional showraw)
   "Look up the word at point and put the result in a buffer of its own."
   (interactive "P")
@@ -388,7 +406,7 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
          (downcase
           (if (use-region-p)
               (buffer-substring (region-beginning) (region-end))
-            (word-at-point))))
+            (word-near-point))))
         (temp-buffer-setup-hook)
         (temp-buffer-show-hook)
         )
