@@ -381,7 +381,6 @@ Join this list into a string using DELIMSETS as a separator ( '. ' as default)"
   )
 
 (defun word-near-point()
-  (interactive)
   "Word-at-point if we're on a word; otherwise try looking backwards, then forwards."
   (if (and (<(point) (point-max))
            (= (syntax-class (syntax-after (point))) 2))
