@@ -1,4 +1,6 @@
 #+TITLE: OED into ORG
+Active development has moved to [[https://gitlab.com/tworthington/emacs-oed-lookup][GitLab]]
+
 * Emacs Oxford English Dictionary Lookup
 This package allows the user to send the word at the cursor ("point" in Emacs-speak) to the OED on-line API. If the word (or its root) is found then the dictionary entry is formatted and inserted into a temporary ORG-mode buffer for perusing. This includes a link which will (on Linux) play the pronunciation sample from the OED for that word.
 
